@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model user {
+  id       Int     @id(map: "User_pkey") @default(autoincrement())
+  email    String  @unique(map: "User_email_key")
+  password String
+  name     String?
+  age      String?
+  username String  @unique(map: "c_username") @default("S/N") @db.VarChar(30)
+}
+
+// ─── Pedidos ─────────────────────────────────────────────────────────────────
+
+/// Tabela de pedidos
+model Order {
+  orderId      String      @id                   // número único do pedido (ex: v10089015vdb-01)
+  value        Float                             // valor total do pedido
+  creationDate DateTime                          // data de criação do pedido
+  items        OrderItem[]                       // itens do pedido (relação 1:N)
+
+  @@map("Order")
+}
+
+/// Tabela de itens do pedido
+model OrderItem {
+  id        Int    @id @default(autoincrement()) // chave primária interna
+  orderId   String                               // referência ao pedido
+  productId Int                                  // ID do produto (idItem convertido para Int)
+  quantity  Int                                  // quantidade do item
+  price     Float                                // valor unitário do item
+
+  order     Order  @relation(fields: [orderId], references: [orderId], onDelete: Cascade)
+
+  @@map("Items")
+}
